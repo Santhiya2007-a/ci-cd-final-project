@@ -1,0 +1,32 @@
+
+apiVersion: tekton.dev/v1
+kind: Task
+metadata:
+  name: cleanup
+spec:
+  steps:
+    - name: cleanup
+      image: alpine:3.20
+      script: |
+        #!/bin/sh
+        echo "Cleaning temporary files..."
+        rm -rf /workspace/source/.pytest_cache
+        rm -rf /workspace/source/__pycache__
+
+---
+apiVersion: tekton.dev/v1
+kind: Task
+metadata:
+  name: test
+spec:
+  workspaces:
+    - name: source
+  steps:
+    - name: run-unit-tests
+      image: python:3.12-slim
+      workingDir: /workspace/source
+      script: |
+        #!/bin/sh
+        set -eu
+        python -m pip install --no-cache-dir nose
+        nosetests
